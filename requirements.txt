@@ -1,0 +1,10 @@
+boto3==1.4.7
+botocore==1.7.44
+coverage==4.5.1
+docutils==0.14
+jmespath==0.9.3
+nose2==0.7.0
+nosy==1.2
+python-dateutil==2.7.2
+s3transfer==0.1.13
+six==1.11.0
