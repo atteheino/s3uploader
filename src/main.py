@@ -8,7 +8,8 @@ from filewatch_handler import MyHandler
 
 
 def print_help():
-    print('main.py <command> -d <directory to watch> -b <bucket where to upload> -p <boto profile> -i <polling interval in seconds>')
+    print('main.py [options] <command>')
+    print('options: -d <directory to watch> -b <bucket where to upload> -p <boto profile> -i <polling interval in seconds>')
     print('Command may be: start, stop or status')
 
 def main(argv):
@@ -42,13 +43,18 @@ def main(argv):
             interval = int(arg)
  
     # Validate that we have all necessary parameters and only one command
-    if args.count != 1 or directory == "" or profile == "" or bucket == "":
+    if len(args) != 1 or directory == "" or profile == "" or bucket == "":
+        print(args)
+        print(directory)
+        print(profile)
+        print(bucket)
         print_help()
         sys.exit()
     else:
         cmd = args[0]
         # Start Service
         if cmd == 'start':
+            print("Start called.")
             if os.path.isfile(pidfile):
                 print("%s already exists, exiting" % pidfile)
                 sys.exit()
@@ -67,10 +73,12 @@ def main(argv):
             observer.join()
         # Stop Service
         elif cmd == 'stop':
+            print("Stop called")
             observer.stop()
             os.unlink(pidfile)
         # Status query
         elif cmd == 'status':
+            print("Status called")
             if os.path.isfile(pidfile):
                 print( "Service is running.")
             else:
