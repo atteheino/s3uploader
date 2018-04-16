@@ -1,1 +1,3 @@
 myenv/
+src/__pycache__/filewatch_handler.cpython-36.pyc
+src/__pycache__/s3uploader.cpython-36.pyc
