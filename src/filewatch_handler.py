@@ -13,7 +13,7 @@ class MyHandler(FileSystemEventHandler):
             path/to/observed/file
         """
 
-        print(event.file)
+        print(event.src_path)
         print(event.is_directory)
         print(event.event_type)
 
