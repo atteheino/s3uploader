@@ -17,8 +17,8 @@ class MyHandler(FileSystemEventHandler):
         print(event.is_directory)
         print(event.event_type)
 
-    def on_modified(self, event):
-        self.process(event)
+#    def on_modified(self, event):
+#        self.process(event)
 
     def on_created(self, event):
         self.process(event)
