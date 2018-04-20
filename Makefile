@@ -1,7 +1,8 @@
 all: myenv
 
-pip_linux:
+server_linux:
 	sudo apt-get install -y python3-pip
+	pip3 install -r requirements.txt
 
 myenv:
 	#brew install python3
