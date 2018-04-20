@@ -4,10 +4,8 @@ server_linux:
 	sudo apt-get install -y python3-pip
 	sudo apt-get install -y python3-setuptools
 	sudo apt-get install -y python3-dev
-	sudo su - s3upload
-	cd /opt/s3uploader
-	pip3 install wheel
-	pip3 install -r requirements.txt
+	sudo -H -u s3upload bash -c 'pip3 install wheel'
+	sudo -H -u s3upload bash -c 'pip3 install -r requirements.txt'
 
 myenv:
 	#brew install python3
