@@ -3,6 +3,7 @@ all: myenv
 server_linux:
 	sudo apt-get install -y python3-pip
 	sudo apt-get install -y python3-setuptools
+	sudo apt-get install -y python3-dev
 	pip3 install wheel
 	pip3 install -r requirements.txt
 
