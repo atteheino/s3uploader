@@ -2,6 +2,7 @@ all: myenv
 
 server_linux:
 	sudo apt-get install -y python3-pip
+	sudo apt-get install -y python3-setuptools
 	pip3 install -r requirements.txt
 
 myenv:
