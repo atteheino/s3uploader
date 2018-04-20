@@ -1,9 +1,9 @@
 all: myenv
 
-myenv_linux:
+pip_linux:
 	sudo apt-get install -y python3-pip
 
-myenv myenv_linux:
+myenv:
 	#brew install python3
 	pip3 install virtualenv
 	virtualenv -p python3 myenv
