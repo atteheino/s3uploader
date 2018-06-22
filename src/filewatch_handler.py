@@ -1,7 +1,13 @@
+import os
 from watchdog.events import LoggingEventHandler
 from watchdog.events import FileSystemEventHandler
+from s3uploader import upload
 
 class MyHandler(FileSystemEventHandler):
+
+    def __init__(self, bucket, profile):
+        self.bucket = bucket
+        self.profile = profile
 
     def process(self, event):
         """
@@ -17,9 +23,12 @@ class MyHandler(FileSystemEventHandler):
         print(event.is_directory)
         print(event.event_type)
 
+        if(not event.is_directory):
+            print("Calling upload of ", event.src_path)
+            upload(self.profile, self.bucket, event.src_path)
+
 #    def on_modified(self, event):
 #        self.process(event)
 
     def on_created(self, event):
         self.process(event)
-

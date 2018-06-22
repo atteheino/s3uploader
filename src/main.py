@@ -61,7 +61,7 @@ def main(argv):
 
             open(pidfile, 'w').write(pid)          
             observer = Observer()
-            observer.schedule(MyHandler(), path=directory, recursive=True)
+            observer.schedule(MyHandler(bucket, profile), path=directory, recursive=True)
             observer.start()
 
             try:
