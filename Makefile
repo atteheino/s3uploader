@@ -7,6 +7,9 @@ server_linux:
 	sudo -H -u s3upload bash -c 'pip3 install wheel'
 	sudo -H -u s3upload bash -c 'pip3 install -r requirements.txt'
 
+server_update:
+	sudo -H -u s3upload bash -c 'pip3 install -r requirements.txt'
+
 myenv:
 	#brew install python3
 	pip3 install virtualenv
