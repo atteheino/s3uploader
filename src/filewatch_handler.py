@@ -5,9 +5,10 @@ from s3uploader import upload
 
 class MyHandler(FileSystemEventHandler):
 
-    def __init__(self, bucket, profile):
+    def __init__(self, bucket, profile, base_dir):
         self.bucket = bucket
         self.profile = profile
+        self.base_dir = base_dir
 
     def process(self, event):
         """
@@ -25,7 +26,7 @@ class MyHandler(FileSystemEventHandler):
 
         if(not event.is_directory):
             print("Calling upload of ", event.src_path)
-            upload(self.profile, self.bucket, event.src_path)
+            upload(self.profile, self.bucket, event.src_path, self.base_dir)
 
 #    def on_modified(self, event):
 #        self.process(event)

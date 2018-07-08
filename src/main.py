@@ -64,7 +64,7 @@ def main(argv):
             s3uploader.upload_files_from_directory(profile, bucket, directory)
             print("...Done")
             observer = Observer()
-            observer.schedule(MyHandler(bucket, profile), path=directory, recursive=True)
+            observer.schedule(MyHandler(bucket, profile, directory), path=directory, recursive=True)
             observer.start()
 
             try:
