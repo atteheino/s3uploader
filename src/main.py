@@ -59,7 +59,10 @@ def main(argv):
                 print("%s already exists, exiting" % pidfile)
                 sys.exit()
 
-            open(pidfile, 'w').write(pid)          
+            open(pidfile, 'w').write(pid)
+            print("Uploading already present files...")
+            s3uploader.upload_files_from_directory(profile, bucket, directory)
+            print("...Done")
             observer = Observer()
             observer.schedule(MyHandler(bucket, profile), path=directory, recursive=True)
             observer.start()
