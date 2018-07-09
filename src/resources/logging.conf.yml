@@ -18,8 +18,12 @@ handlers:
 loggers:
   s3uploader:
     level: INFO
-    handlers: [console]
+    handlers: [file]
     propagate: no
+  filewatch_handler:
+    level: INFO
+    handlers: [file]
+    propagate: no  
 root:
   level: INFO
   handlers: [console, file]
