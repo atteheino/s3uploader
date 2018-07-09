@@ -74,7 +74,7 @@ def main(argv):
                         sys.exit()
                     else:
                         logging.info("Removing stale PID file. Process does not exists anymore.")
-                        os.remove(pidfile)
+                        os.unlink(pidfile)
 
                 open(pidfile, 'w').write(pid)
                 logging.info("Uploading already present files...")
@@ -102,6 +102,8 @@ def main(argv):
             if os.path.isfile(pidfile):
                 if pid_exists(int(get_pid_from_pidfile(pidfile))):
                     logging.info( "Service is running.")
+                else:
+                    logging.info( "Service is not running.")
             else:
                 logging.info( "Service is not running.")
         else:
