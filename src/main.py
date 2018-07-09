@@ -46,8 +46,8 @@ def main(argv):
         elif opt in ("-i", "--interval"):
             interval = int(arg)
  
-    # Validate that we have all necessary parameters and only one command
-    if len(args) != 1 or directory == "" or profile == "" or bucket == "":
+    # Validate that we have only one command
+    if len(args) != 1:
         logging.info(args)
         logging.info(directory)
         logging.info(profile)
@@ -58,31 +58,39 @@ def main(argv):
         cmd = args[0]
         # Start Service
         if cmd == 'start':
-            logging.info("Start called.")
-            if os.path.isfile(pidfile):
-                if pid_exists(int(get_pid_from_pidfile(pidfile))):
-                    logging.info("%s already exists, exiting" % pidfile)
-                    sys.exit()
-                else:
-                    logging.info("Removing stale PID file. Process does not exists anymore.")
-                    os.remove(pidfile)
+            # Validate that we have all necessary parameters
+            if directory == "" or profile == "" or bucket == "":
+                logging.info(args)
+                logging.info(directory)
+                logging.info(profile)
+                logging.info(bucket)
+                print_help()
+                sys.exit()
+            else:
+                logging.info("Start called.")
+                if os.path.isfile(pidfile):
+                    if pid_exists(int(get_pid_from_pidfile(pidfile))):
+                        logging.info("%s already exists, exiting" % pidfile)
+                        sys.exit()
+                    else:
+                        logging.info("Removing stale PID file. Process does not exists anymore.")
+                        os.remove(pidfile)
 
+                open(pidfile, 'w').write(pid)
+                logging.info("Uploading already present files...")
+                s3uploader.upload_files_from_directory(profile, bucket, directory)
+                logging.info("...Done")
+                observer = Observer()
+                observer.schedule(MyHandler(bucket, profile, directory), path=directory, recursive=True)
+                observer.start()
 
-            open(pidfile, 'w').write(pid)
-            logging.info("Uploading already present files...")
-            s3uploader.upload_files_from_directory(profile, bucket, directory)
-            logging.info("...Done")
-            observer = Observer()
-            observer.schedule(MyHandler(bucket, profile, directory), path=directory, recursive=True)
-            observer.start()
-
-            try:
-                while True:
-                    time.sleep(interval)
-            except KeyboardInterrupt:
-                observer.stop()
-                os.unlink(pidfile)
-            observer.join()
+                try:
+                    while True:
+                        time.sleep(interval)
+                except KeyboardInterrupt:
+                    observer.stop()
+                    os.unlink(pidfile)
+                observer.join()
         # Stop Service
         elif cmd == 'stop':
             logging.info("Stop called")
@@ -92,7 +100,8 @@ def main(argv):
         elif cmd == 'status':
             logging.info("Status called")
             if os.path.isfile(pidfile):
-                logging.info( "Service is running.")
+                if pid_exists(int(get_pid_from_pidfile(pidfile))):
+                    logging.info( "Service is running.")
             else:
                 logging.info( "Service is not running.")
         else:
