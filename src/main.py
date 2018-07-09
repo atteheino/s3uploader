@@ -60,7 +60,7 @@ def main(argv):
         if cmd == 'start':
             logging.info("Start called.")
             if os.path.isfile(pidfile):
-                if pid_exists(int(get_pid_from_pidfile(pidfile)):
+                if pid_exists(int(get_pid_from_pidfile(pidfile))):
                     logging.info("%s already exists, exiting" % pidfile)
                     sys.exit()
                 else:
