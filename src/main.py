@@ -1,6 +1,7 @@
 import getopt
-import sys
+import errno
 import os
+import sys
 import time
 import s3uploader
 from watchdog.observers import Observer
@@ -56,8 +57,13 @@ def main(argv):
         if cmd == 'start':
             print("Start called.")
             if os.path.isfile(pidfile):
-                print("%s already exists, exiting" % pidfile)
-                sys.exit()
+                if pid_exists(get_pid_from_pidfile(pidfile)):
+                    print("%s already exists, exiting" % pidfile)
+                    sys.exit()
+                else:
+                    print("Removing stale PID file. Process does not exists anymore.")
+                    os.remove(pidfile)
+
 
             open(pidfile, 'w').write(pid)
             print("Uploading already present files...")
@@ -88,6 +94,41 @@ def main(argv):
                 print( "Service is not running.")
         else:
             sys.exit('Unknown command "%s".' % cmd)
- 
+
+def pid_exists(pid):
+    """Check whether pid exists in the current process table.
+    UNIX only.
+    """
+    if pid < 0:
+        return False
+    if pid == 0:
+        # According to "man 2 kill" PID 0 refers to every process
+        # in the process group of the calling process.
+        # On certain systems 0 is a valid PID but we have no way
+        # to know that in a portable fashion.
+        raise ValueError('invalid PID 0')
+    try:
+        os.kill(pid, 0)
+    except OSError as err:
+        if err.errno == errno.ESRCH:
+            # ESRCH == No such process
+            return False
+        elif err.errno == errno.EPERM:
+            # EPERM clearly means there's a process to deny access to
+            return True
+        else:
+            # According to "man 2 kill" possible error values are
+            # (EINVAL, EPERM, ESRCH)
+            raise
+    else:
+        return True
+
+def get_pid_from_pidfile(pidfile):
+    try:
+        file = open(pidfile) 
+        return file.read()
+    except:
+        sys.exit("Could not read PID file")
+
 if (__name__ == '__main__'):
     main(sys.argv[1:])
