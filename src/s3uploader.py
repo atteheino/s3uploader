@@ -1,4 +1,5 @@
 import boto3
+import logging
 from os import remove, listdir, walk
 from os.path import isfile, join, realpath, exists, split
 
@@ -9,12 +10,13 @@ def upload_files_from_directory(PROFILE, BUCKET, BASE_FOLDER):
 
 
 def upload(PROFILE, BUCKET, FILE, BASE_FOLDER):
-    print("Going to try to upload {} to bucket {} with profile {}".format(FILE, BUCKET, PROFILE))
+    logger = logging.getLogger(__name__)
+    logger.info("Going to try to upload {} to bucket {} with profile {}".format(FILE, BUCKET, PROFILE))
     session = boto3.Session(profile_name=PROFILE)
     s3 = session.resource('s3')
     folder, file_name = split(FILE)
     key_prefix = extract_key(folder, BASE_FOLDER)
-    print(folder, file_name, key_prefix)
+    logger.info(folder + ' ' + file_name + ' ' + key_prefix)
     upload_to_s3(s3, BUCKET, file_name, key_prefix, folder)
     remove(FILE)
  

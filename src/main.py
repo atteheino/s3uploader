@@ -1,20 +1,23 @@
+import logging
+import logging.config
 import getopt
 import errno
 import os
 import sys
 import time
+import yaml
 import s3uploader
 from watchdog.observers import Observer
 from filewatch_handler import MyHandler
 
 
 def print_help():
-    print('main.py [options] <command>')
-    print('options: -d <directory to watch> -b <bucket where to upload> -p <boto profile> -i <polling interval in seconds>')
-    print('Command may be: start, stop or status')
+    logging.info('main.py [options] <command>')
+    logging.info('options: -d <directory to watch> -b <bucket where to upload> -p <boto profile> -i <polling interval in seconds>')
+    logging.info('Command may be: start, stop or status')
 
 def main(argv):
-
+    
     profile=''
     bucket=''
     directory=''
@@ -45,30 +48,30 @@ def main(argv):
  
     # Validate that we have all necessary parameters and only one command
     if len(args) != 1 or directory == "" or profile == "" or bucket == "":
-        print(args)
-        print(directory)
-        print(profile)
-        print(bucket)
+        logging.info(args)
+        logging.info(directory)
+        logging.info(profile)
+        logging.info(bucket)
         print_help()
         sys.exit()
     else:
         cmd = args[0]
         # Start Service
         if cmd == 'start':
-            print("Start called.")
+            logging.info("Start called.")
             if os.path.isfile(pidfile):
                 if pid_exists(get_pid_from_pidfile(pidfile)):
-                    print("%s already exists, exiting" % pidfile)
+                    logging.info("%s already exists, exiting" % pidfile)
                     sys.exit()
                 else:
-                    print("Removing stale PID file. Process does not exists anymore.")
+                    logging.info("Removing stale PID file. Process does not exists anymore.")
                     os.remove(pidfile)
 
 
             open(pidfile, 'w').write(pid)
-            print("Uploading already present files...")
+            logging.info("Uploading already present files...")
             s3uploader.upload_files_from_directory(profile, bucket, directory)
-            print("...Done")
+            logging.info("...Done")
             observer = Observer()
             observer.schedule(MyHandler(bucket, profile, directory), path=directory, recursive=True)
             observer.start()
@@ -82,16 +85,16 @@ def main(argv):
             observer.join()
         # Stop Service
         elif cmd == 'stop':
-            print("Stop called")
+            logging.info("Stop called")
             observer.stop()
             os.unlink(pidfile)
         # Status query
         elif cmd == 'status':
-            print("Status called")
+            logging.info("Status called")
             if os.path.isfile(pidfile):
-                print( "Service is running.")
+                logging.info( "Service is running.")
             else:
-                print( "Service is not running.")
+                logging.info( "Service is not running.")
         else:
             sys.exit('Unknown command "%s".' % cmd)
 
@@ -130,5 +133,25 @@ def get_pid_from_pidfile(pidfile):
     except:
         sys.exit("Could not read PID file")
 
+def setup_logging(
+    default_path='resources/logging.conf.yml',
+    default_level=logging.INFO,
+    env_key='LOG_CFG'
+):
+    """Setup logging configuration
+
+    """
+    path = default_path
+    value = os.getenv(env_key, None)
+    if value:
+        path = value
+    if os.path.exists(path):
+        with open(path, 'rt') as f:
+            config = yaml.safe_load(f.read())
+        logging.config.dictConfig(config)
+    else:
+        logging.basicConfig(level=default_level)
+
 if (__name__ == '__main__'):
+    setup_logging()
     main(sys.argv[1:])
