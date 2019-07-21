@@ -46,10 +46,10 @@ def main(argv):
 
                 for configuration in config['configurations']:
                     create_observer_instance(
-                        configuration.name,
-                        configuration.directory,
-                        configuration.boto_profile,
-                        configuration.bucket,
+                        configuration['name'],
+                        configuration['directory'],
+                        configuration['boto_profile'],
+                        configuration['bucket'],
                         observer
                     )
 
