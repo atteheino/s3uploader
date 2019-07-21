@@ -97,6 +97,7 @@ def create_observer_instance(
         sys.exit()
     else:
         logging.info("Creating observer for %s" % name)
+        logging.info("Directory: %s" % directory)
         logging.info("Uploading already present files...")
         s3uploader.upload_files_from_directory(profile, bucket, directory)
         logging.info("...Done uloading from %s" % directory)
