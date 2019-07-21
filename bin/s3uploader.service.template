@@ -1,0 +1,14 @@
+[Unit]
+Description=S3 Uploader Service
+
+[Service]
+# Command to execute when the service is started
+# -u = Force stdout & stderr to be unbuffered
+User=s3upload
+WorkingDirectory=/opt/s3uploader/src
+ExecStart=/usr/bin/python3 -u /opt/s3uploader/src/main.py start
+ExecStop=/usr/bin/python3 -u /opt/s3uploader/src/main.py stop
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

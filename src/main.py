@@ -12,61 +12,28 @@ from filewatch_handler import MyHandler
 
 
 def print_help():
-    logging.info('main.py [options] <command>')
-    logging.info('options: -d <directory to watch> -b <bucket where to upload> -p <boto profile> -i <polling interval in seconds>')
+    logging.info('main.py <command>')
     logging.info('Command may be: start, stop or status')
 
 def main(argv):
-    
-    profile=''
-    bucket=''
-    directory=''
     # Default interval of 60 sec.
     interval=60
-
+    observer = Observer()
+    
     pid = str(os.getpid())
     pidfile = "/tmp/s3uploader.pid"
-
-    # Get parameters and assign to variables
-    try:
-        opts, args = getopt.getopt(argv,"hp:d:b:i:",["--help","--profile=","--directory=","--bucket=","--interval="])
-    except getopt.GetoptError:
-        print_help()
-        sys.exit(2)
-    for opt, arg in opts:
-        if opt == '-h':
-            print_help()
-            sys.exit()
-        elif opt in ("-p", "--profile"):
-            profile = arg
-        elif opt in ("-b", "--bucket"):
-            bucket = arg
-        elif opt in ("-d", "--directory"):
-            directory = arg
-        elif opt in ("-i", "--interval"):
-            interval = int(arg)
  
     # Validate that we have only one command
-    if len(args) != 1:
-        logging.info(args)
-        logging.info(directory)
-        logging.info(profile)
-        logging.info(bucket)
+    if len(argv) != 1:
         print_help()
         sys.exit()
     else:
-        cmd = args[0]
+        cmd = argv[0]
         # Start Service
         if cmd == 'start':
-            # Validate that we have all necessary parameters
-            if directory == "" or profile == "" or bucket == "":
-                logging.info(args)
-                logging.info(directory)
-                logging.info(profile)
-                logging.info(bucket)
-                print_help()
-                sys.exit()
-            else:
+            config=load_config()
+            interval=int(config['interval_sec'])
+            if len(config['configurations']) > 0:
                 logging.info("Start called.")
                 if os.path.isfile(pidfile):
                     if pid_exists(int(get_pid_from_pidfile(pidfile))):
@@ -75,13 +42,17 @@ def main(argv):
                     else:
                         logging.info("Removing stale PID file. Process does not exists anymore.")
                         os.unlink(pidfile)
-
                 open(pidfile, 'w').write(pid)
-                logging.info("Uploading already present files...")
-                s3uploader.upload_files_from_directory(profile, bucket, directory)
-                logging.info("...Done")
-                observer = Observer()
-                observer.schedule(MyHandler(bucket, profile, directory), path=directory, recursive=True)
+
+                for configuration in config['configurations']:
+                    create_observer_instance(
+                        configuration.name,
+                        configuration.directory,
+                        configuration.boto_profile,
+                        configuration.bucket,
+                        observer
+                    )
+
                 observer.start()
 
                 try:
@@ -94,6 +65,7 @@ def main(argv):
         # Stop Service
         elif cmd == 'stop':
             logging.info("Stop called")
+            observer.unschedule_all()
             observer.stop()
             os.unlink(pidfile)
         # Status query
@@ -108,6 +80,28 @@ def main(argv):
                 logging.info( "Service is not running.")
         else:
             sys.exit('Unknown command "%s".' % cmd)
+
+def create_observer_instance(
+    name,
+    directory,
+    profile,
+    bucket,
+    observer
+):
+    # Validate that we have all necessary parameters
+    if directory == "" or profile == "" or bucket == "":
+        logging.info(directory)
+        logging.info(profile)
+        logging.info(bucket)
+        print_help()
+        sys.exit()
+    else:
+        logging.info("Creating observer for %s" % name)
+        logging.info("Uploading already present files...")
+        s3uploader.upload_files_from_directory(profile, bucket, directory)
+        logging.info("...Done uloading from %s" % directory)
+        
+        observer.schedule(MyHandler(bucket, profile, directory), path=directory, recursive=True)
 
 def pid_exists(pid):
     """Check whether pid exists in the current process table.
@@ -162,6 +156,15 @@ def setup_logging(
         logging.config.dictConfig(config)
     else:
         logging.basicConfig(level=default_level)
+
+def load_config(default_path='../conf/s3uploader.conf.yml'):
+    path=default_path
+    if os.path.exists(path):
+        with open(path, 'rt') as f:
+            config = yaml.safe_load(f.read())
+            return config
+    else:
+        sys.exit("Configuration file not found")
 
 if (__name__ == '__main__'):
     setup_logging()

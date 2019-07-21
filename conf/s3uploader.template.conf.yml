@@ -1,0 +1,11 @@
+---
+interval_sec: 60
+configurations:
+  - name: "S3 Uload config for zzz files"
+    directory: "var/ftp/videoftp/files"
+    boto_profile: "default"
+    bucket: "bucketzzz"
+  - name: "S3 Uload config for yyy files"
+    directory: "var/ftp/videoftp/files_yyy"
+    boto_profile: "default"
+    bucket: "bucketyyy"
